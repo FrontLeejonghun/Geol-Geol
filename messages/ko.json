@@ -1,0 +1,162 @@
+{
+  "common": {
+    "appName": "껄껄",
+    "tagline": "그때 살껄...",
+    "loading": "로딩 중...",
+    "calculating": "계산 중..."
+  },
+  "home": {
+    "title": "주식 후회 계산기",
+    "subtitle": "그때 샀으면 얼마가 됐을까?",
+    "step1": "1. 종목 선택",
+    "step2": "2. 매수일 선택",
+    "step3": "3. 투자금액 (선택)",
+    "searchPlaceholder": "종목 검색 (삼성전자, AAPL...)",
+    "searchLabel": "종목 검색",
+    "datePlaceholder": "언제 샀으면",
+    "dateLabel": "매수일 선택",
+    "amountPlaceholder": "얼마를 (선택)",
+    "amountLabel": "투자 금액",
+    "calculate": "계산하기",
+    "calculateRegret": "후회 계산하기",
+    "instructions": "KR 또는 US 주식을 검색하고 날짜를 선택해서 후회를 계산하세요.",
+    "summary": "요약",
+    "summaryText": "{symbol}을(를) {date}에 샀다면..."
+  },
+  "result": {
+    "title": "결과",
+    "description": "그때 샀으면 얼마가 됐을까? 주식 후회를 계산하세요!",
+    "headline": "{stockName}을(를) {date}에 샀다면",
+    "purchasePrice": "매수가",
+    "currentPrice": "현재가",
+    "change": "변동",
+    "absoluteGainLoss": "손익금액",
+    "asOf": "일 기준",
+    "buyDate": "매수일",
+    "percentChange": "{percent}%",
+    "absoluteChange": "{amount}",
+    "return": "수익률",
+    "pnlSummary": "손익 요약",
+    "pnlDetails": "손익 상세",
+    "stockResult": "주식 손익 결과"
+  },
+  "outcome": {
+    "jackpot": "대박",
+    "gain": "수익",
+    "flat": "보합",
+    "loss": "손실",
+    "catastrophe": "대참사"
+  },
+  "share": {
+    "download": "이미지 저장",
+    "downloadImage": "이미지 저장",
+    "copy": "복사하기",
+    "copyToClipboard": "클립보드에 이미지 복사",
+    "share": "공유하기",
+    "copied": "복사 완료!",
+    "downloading": "생성 중...",
+    "generating": "생성 중...",
+    "downloaded": "저장 완료!",
+    "done": "완료!",
+    "copyFailed": "복사 실패",
+    "unsupported": "지원 안함",
+    "copying": "복사 중...",
+    "selectSize": "사이즈 선택",
+    "shareTitle": "껄껄 - 그때 살껄...",
+    "shareText": "나의 투자 결과를 확인해보세요!",
+    "retry": "다시 시도"
+  },
+  "size": {
+    "instagram": "인스타그램",
+    "twitterOg": "트위터/OG",
+    "portrait": "1080×1350 (세로)",
+    "landscape": "1200×630 (가로)"
+  },
+  "meme": {
+    "jackpot": {
+      "headline": "그때 살껄!!!",
+      "subline": "대박났을텐데... 아 진짜 😭"
+    },
+    "gain": {
+      "headline": "그때 살껄...",
+      "subline": "지금쯤 부자였을텐데 💰"
+    },
+    "flat": {
+      "headline": "뭐야 이게...",
+      "subline": "시간만 버릴 뻔했네 😐"
+    },
+    "loss": {
+      "headline": "에휴... 손해 봤겠네",
+      "subline": "그래도 안 사서 다행이야"
+    },
+    "catastrophe": {
+      "headline": "와... 안 사길 잘했다",
+      "subline": "큰일날 뻔 😰"
+    }
+  },
+  "search": {
+    "searching": "검색 중...",
+    "noResults": "\"{query}\"에 대한 종목을 찾을 수 없습니다",
+    "resultsFound": "{count}개 결과 발견",
+    "noResultsFound": "결과 없음",
+    "tryAgain": "다시 시도",
+    "clearSearch": "검색 지우기"
+  },
+  "date": {
+    "selectPurchaseDate": "매수일 선택",
+    "quickSelect": "빠른 선택:",
+    "weekendWarning": "주말 선택 - 마지막 거래일이 적용됩니다",
+    "invalidFormat": "잘못된 날짜 형식",
+    "futureDate": "과거 날짜를 선택하세요",
+    "selectPastDate": "과거 날짜를 선택해주세요",
+    "tooOld": "너무 오래된 날짜입니다",
+    "weekendHint": "주말 선택 - 마지막 거래일이 적용됩니다",
+    "correctedTo": "{correctedDate}로 조정됨",
+    "selected": "선택",
+    "using": "적용",
+    "autoCorrected": "마지막 거래일로 자동 조정",
+    "preset": {
+      "1week": "1주 전",
+      "1month": "1달 전",
+      "3months": "3달 전",
+      "6months": "6달 전",
+      "1year": "1년 전",
+      "2years": "2년 전",
+      "5years": "5년 전"
+    }
+  },
+  "error": {
+    "fetchFailed": "데이터를 불러오지 못했습니다",
+    "invalidTicker": "잘못된 종목 코드입니다",
+    "noData": "해당 날짜의 데이터가 없습니다",
+    "retry": "다시 시도",
+    "networkError": "네트워크 오류가 발생했습니다",
+    "serverError": "서버 오류가 발생했습니다",
+    "unknownError": "알 수 없는 오류가 발생했습니다"
+  },
+  "chart": {
+    "loading": "차트 로딩 중...",
+    "buyMarker": "매수일"
+  },
+  "accessibility": {
+    "loadingChart": "차트 로딩 중...",
+    "loadingResult": "결과 로딩 중...",
+    "searchResults": "검색 결과",
+    "datePresets": "날짜 빠른 선택",
+    "stockSearchForm": "주식 후회 계산기 양식",
+    "keyboardHint": "Enter로 계산, Escape로 초기화",
+    "switchToDark": "다크 모드로 전환",
+    "switchToLight": "라이트 모드로 전환",
+    "pressEscapeToGoBack": "Escape를 눌러 돌아가기",
+    "backToHome": "홈으로 돌아가기",
+    "downloadImage": "이미지 저장하기",
+    "copyImageToClipboard": "클립보드에 이미지 복사하기",
+    "shareImage": "이미지 공유하기",
+    "toggleSizeSelector": "사이즈 선택 열기/닫기"
+  },
+  "footer": {
+    "disclaimer": "이 계산기는 참고용이며, 투자 조언이 아닙니다.",
+    "brand": "껄껄",
+    "tagline": "그때 살껄..."
+  }
+}

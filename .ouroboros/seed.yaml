@@ -1,0 +1,142 @@
+version: "1.0"
+generated_at: "2026-05-09"
+interview_id: "92367d1b-6971-4450-a3e6-0e00d78a96c2"
+
+goal: >
+  Build "껄껄 (Geol-Geol)" — a meme-friendly Next.js 15 web service that
+  calculates how much a user would have gained or lost if they had bought
+  a given KR/US stock on a past date, and renders the result as a shareable
+  PNG image to drive viral self-deprecating SNS sharing ("그때 살껄...").
+
+constraints:
+  - "Next.js 15 (App Router, RSC) + TypeScript strict mode"
+  - "Tailwind CSS v4 for styling"
+  - "oxc (oxlint) for linting/formatting — no ESLint/Prettier"
+  - "yahoo-finance2 (npm) as the sole quote source for v1 — server-side only (Route Handlers)"
+  - "next-intl for i18n with URL-based routing (/ko, /en)"
+  - "Lightweight Charts (TradingView) for chart rendering"
+  - "Canvas API (HTMLCanvasElement / OffscreenCanvas + FontFace) for share image generation"
+  - "Vercel Data Cache via unstable_cache wrapping yahoo-finance2 calls (TTL >= 1h)"
+  - "Deploy target: Vercel (free tier compatible)"
+  - "Result page is stateless: query-string-encoded inputs, no DB / no KV-backed result IDs"
+  - "Stock currency is auto-applied (KOSPI -> KRW, US -> USD); no FX conversion in v1"
+  - "Weekend / holiday selection maps to nearest PRIOR trading day"
+  - "Stock search uses yahoo-finance2 search() exclusively (no static KRX/KOSPI mapping)"
+  - "Locale detection via Accept-Language header on first visit, persisted via cookie"
+  - "External API fallback (Finnhub etc.) is OUT OF SCOPE for v1 — show friendly error + retry"
+  - "No analytics in v1 (no Vercel Analytics / Plausible / GA4)"
+  - "No user accounts, no result persistence, no portfolio tracking, no push (v1 scope)"
+  - "Mobile-first responsive: 375px / tablet / desktop"
+  - "Fonts: Pretendard (KO) + Inter (EN), explicitly loaded via FontFace before canvas render"
+  - "Total v1 timeline target: ~9–10 days across milestones M1–M5"
+
+acceptance_criteria:
+  - "End-to-end flow succeeds for at least one KR ticker (e.g. 005930.KS) AND one US ticker (e.g. AAPL): search → date select → calculate → chart render → PNG generate → download AND clipboard copy"
+  - "Lighthouse production build: LCP < 2.5s on main page (mobile, throttled), main-page first-load JS < 150KB gzipped (verified via @next/bundle-analyzer)"
+  - "Both ko and en locales render main page AND result page with all UI strings translated and Intl.NumberFormat correctly formatting currency/numbers per locale; build fails on missing translation keys (typed-intl)"
+  - "Weekend/holiday date input is auto-corrected to the nearest prior trading day with no error"
+  - "Past date and quote computation uses cached responses (verified via Vercel response headers) with TTL >= 1 hour"
+  - "Share image is generated at both 1080x1350 (Instagram 4:5) and 1200x630 (OG) sizes with Korean glyphs rendering correctly"
+  - "Meme copy is randomized per result via 5-tier outcome bucket (catastrophe / loss / flat / gain / jackpot) with at least 3 presets per tier per locale"
+  - "Web Share API (navigator.share) is wired and used on supported clients; PNG download + clipboard write work on desktop"
+  - "Yahoo Finance failure surfaces a friendly error + retry button (no crash, no fallback provider in v1)"
+  - "WCAG AA: keyboard navigable forms, aria-labels on icon buttons, color contrast passes axe-core scan"
+
+ontology_schema:
+  name: GeolGeol
+  description: >
+    Domain model for a stock-regret calculator: a user supplies a ticker,
+    a hypothetical buy date, and an optional virtual purchase amount; the
+    system returns a price-history slice, a P&L computation, and a
+    shareable meme image specification.
+  fields:
+    - name: stock
+      type: object
+      description: "Resolved security: { ticker, name (i18n), exchange, currency, marketHours }"
+    - name: buyDate
+      type: string
+      description: "User-selected ISO date; if non-trading, system maps to nearest prior trading day and exposes both raw and resolved dates"
+    - name: virtualAmount
+      type: number
+      description: "Optional hypothetical purchase amount in the stock's native currency (auto-applied); null means percent-only mode"
+    - name: priceHistory
+      type: array
+      description: "Daily close prices from buyDate to today, used for chart rendering and sparkline in share image"
+    - name: pastPrice
+      type: number
+      description: "Adjusted close on resolved buy date (in stock currency)"
+    - name: currentPrice
+      type: number
+      description: "Latest available close (15-min delayed acceptable)"
+    - name: pnl
+      type: object
+      description: "{ absolute: number, percent: number, currency: string, outcomeTier: 'catastrophe'|'loss'|'flat'|'gain'|'jackpot' }"
+    - name: memeCopy
+      type: object
+      description: "{ headline: string, subline: string } selected randomly from preset pool keyed by (locale, outcomeTier)"
+    - name: shareImage
+      type: object
+      description: "{ size: '1080x1350'|'1200x630', blob: Blob, dataUrl: string } produced via OffscreenCanvas"
+    - name: locale
+      type: string
+      description: "'ko' | 'en' — drives translations, number/currency formatting, and meme copy pool"
+    - name: theme
+      type: string
+      description: "'light' | 'dark' — system-detected with manual toggle"
+
+evaluation_principles:
+  - name: viral_share_quality
+    description: "Share image is visually striking, legible at thumbnail size, brand-consistent, and emotionally resonant with the meme concept; drives self-initiated sharing"
+    weight: 0.25
+  - name: data_correctness
+    description: "Price/P&L computations match Yahoo source within rounding; trading-day mapping and currency are unambiguously correct; cache TTL respected"
+    weight: 0.20
+  - name: performance
+    description: "LCP < 2.5s, first-load JS < 150KB gzip on main; chart and canvas render without jank on mid-tier mobile"
+    weight: 0.15
+  - name: i18n_completeness
+    description: "ko and en parity across all surfaces with locale-aware currency/number formatting and meme-copy pools"
+    weight: 0.15
+  - name: accessibility
+    description: "WCAG AA: keyboard nav, aria semantics, color contrast, screen-reader-friendly result announcement"
+    weight: 0.10
+  - name: error_resilience
+    description: "API failures surface friendly, retryable errors; weekend/holiday inputs handled silently; no uncaught exceptions"
+    weight: 0.10
+  - name: code_quality
+    description: "TypeScript strict passes, oxlint clean, RSC boundaries respected, fetch caching wrapper isolates yahoo-finance2 npm calls"
+    weight: 0.05
+
+exit_conditions:
+  - name: m1_setup_complete
+    description: "Project bootstrapped with Next.js 15 + TS strict + Tailwind v4 + oxc + yahoo-finance2 wired into a working /api/quote route with one verified ticker round-trip"
+    criteria: "pnpm dev runs; oxlint clean; one KR + one US ticker fetch returns past+current price"
+  - name: m2_result_ui_complete
+    description: "Result page renders chart with buy-date marker, dark mode toggles via system + manual, basic styling polished"
+    criteria: "Chart shows correct slice; dark mode persists; mobile layout passes 375px breakpoint"
+  - name: m3_share_image_complete
+    description: "Canvas-rendered PNG generates at 1080x1350 and 1200x630; OG image dynamic route works; download + clipboard + Web Share verified"
+    criteria: "Korean glyphs render; both sizes downloadable; Web Share invoked on supported devices"
+  - name: m4_i18n_polish_complete
+    description: "ko/en translations complete, currency/number formatting locale-correct, error states friendly, responsive polish across breakpoints"
+    criteria: "typed-intl build passes with no missing keys; locale auto-redirect via Accept-Language works; cookie persists choice"
+  - name: m5_deployment_live
+    description: "Production Vercel deployment with custom domain, no analytics, all acceptance_criteria green in production environment"
+    criteria: "Deployed URL serves all flows; Lighthouse CI on production meets perf thresholds; KR + US end-to-end works in prod"
+
+project_type: greenfield
+context_references: []
+existing_patterns: []
+existing_dependencies: []
+
+metadata:
+  ambiguity_score: 0.12
+  confidence: high
+  notes: |
+    Source PRD was unusually detailed; the interview resolved the remaining
+    "or"-marked decisions (chart lib, cache backend, result URL strategy,
+    share scope, currency, trading-day mapping, search strategy, locale
+    detection, fallback scope, analytics, meme copy strategy). One technical
+    note carried into constraints: yahoo-finance2 is an npm wrapper, not a
+    raw fetch, so Vercel's automatic fetch-based Data Cache does not apply
+    — it MUST be wrapped via next/cache `unstable_cache` for TTL caching.

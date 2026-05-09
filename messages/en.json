@@ -1,0 +1,162 @@
+{
+  "common": {
+    "appName": "Geol-Geol",
+    "tagline": "If only I had bought...",
+    "loading": "Loading...",
+    "calculating": "Calculating..."
+  },
+  "home": {
+    "title": "Stock Regret Calculator",
+    "subtitle": "What if I had bought that stock back then?",
+    "step1": "1. Select a stock",
+    "step2": "2. When would you have bought?",
+    "step3": "3. Investment amount (optional)",
+    "searchPlaceholder": "Search stocks (Samsung, AAPL...)",
+    "searchLabel": "Search for a stock",
+    "datePlaceholder": "Select when you would have bought",
+    "dateLabel": "Select purchase date",
+    "amountPlaceholder": "Amount (optional)",
+    "amountLabel": "Investment amount",
+    "calculate": "Calculate",
+    "calculateRegret": "Calculate Regret",
+    "instructions": "Search for KR or US stocks and select a date to calculate your regret.",
+    "summary": "Summary",
+    "summaryText": "If you bought {symbol} on {date}..."
+  },
+  "result": {
+    "title": "Result",
+    "description": "What if I had bought that stock? Calculate your investment regret!",
+    "headline": "If you bought {stockName} on {date}",
+    "purchasePrice": "Purchase Price",
+    "currentPrice": "Current Price",
+    "change": "Change",
+    "absoluteGainLoss": "Gain/Loss",
+    "asOf": "as of",
+    "buyDate": "Buy Date",
+    "percentChange": "{percent}%",
+    "absoluteChange": "{amount}",
+    "return": "Return",
+    "pnlSummary": "P&L Summary",
+    "pnlDetails": "P&L Details",
+    "stockResult": "Stock P&L Result"
+  },
+  "outcome": {
+    "jackpot": "Jackpot",
+    "gain": "Gain",
+    "flat": "Flat",
+    "loss": "Loss",
+    "catastrophe": "Disaster"
+  },
+  "share": {
+    "download": "Download",
+    "downloadImage": "Download Image",
+    "copy": "Copy",
+    "copyToClipboard": "Copy image to clipboard",
+    "share": "Share",
+    "copied": "Copied!",
+    "downloading": "Generating...",
+    "generating": "Generating...",
+    "downloaded": "Downloaded!",
+    "done": "Done!",
+    "copyFailed": "Copy failed",
+    "unsupported": "Not supported",
+    "copying": "Copying...",
+    "selectSize": "Select Size",
+    "shareTitle": "GeolGeol - Should've bought...",
+    "shareText": "Check out my investment result!",
+    "retry": "Retry"
+  },
+  "size": {
+    "instagram": "Instagram",
+    "twitterOg": "Twitter/OG",
+    "portrait": "1080×1350 (Portrait)",
+    "landscape": "1200×630 (Landscape)"
+  },
+  "meme": {
+    "jackpot": {
+      "headline": "SHOULD'VE BOUGHT!!!",
+      "subline": "Would be a millionaire!!! 😭"
+    },
+    "gain": {
+      "headline": "Should've bought...",
+      "subline": "I'd be rich by now 💰"
+    },
+    "flat": {
+      "headline": "Whatever...",
+      "subline": "Nothing happened anyway 😐"
+    },
+    "loss": {
+      "headline": "Could've been worse",
+      "subline": "Still glad I skipped it"
+    },
+    "catastrophe": {
+      "headline": "Phew, glad I passed",
+      "subline": "Bullet dodged! 😰"
+    }
+  },
+  "search": {
+    "searching": "Searching...",
+    "noResults": "No stocks found for \"{query}\"",
+    "resultsFound": "{count} results found",
+    "noResultsFound": "No results found",
+    "tryAgain": "Try again",
+    "clearSearch": "Clear search"
+  },
+  "date": {
+    "selectPurchaseDate": "Select purchase date",
+    "quickSelect": "Quick select:",
+    "weekendWarning": "Weekend selected - will use last trading day",
+    "invalidFormat": "Invalid date format",
+    "futureDate": "Date must be in the past",
+    "selectPastDate": "Please select a past date",
+    "tooOld": "Date is too far in the past",
+    "weekendHint": "Weekend selected - will use last trading day",
+    "correctedTo": "Adjusted to {correctedDate}",
+    "selected": "Selected",
+    "using": "Using",
+    "autoCorrected": "Auto-adjusted to last trading day",
+    "preset": {
+      "1week": "1 week ago",
+      "1month": "1 month ago",
+      "3months": "3 months ago",
+      "6months": "6 months ago",
+      "1year": "1 year ago",
+      "2years": "2 years ago",
+      "5years": "5 years ago"
+    }
+  },
+  "error": {
+    "fetchFailed": "Failed to load data",
+    "invalidTicker": "Invalid stock ticker",
+    "noData": "No data available for this date",
+    "retry": "Retry",
+    "networkError": "Network error occurred",
+    "serverError": "Server error occurred",
+    "unknownError": "An unknown error occurred"
+  },
+  "chart": {
+    "loading": "Loading chart...",
+    "buyMarker": "Buy Date"
+  },
+  "accessibility": {
+    "loadingChart": "Loading chart...",
+    "loadingResult": "Loading result...",
+    "searchResults": "Search results",
+    "datePresets": "Date presets",
+    "stockSearchForm": "Stock regret calculator form",
+    "keyboardHint": "Press Enter to calculate, Escape to clear",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode",
+    "pressEscapeToGoBack": "Press Escape to go back",
+    "backToHome": "Go back to home",
+    "downloadImage": "Download image",
+    "copyImageToClipboard": "Copy image to clipboard",
+    "shareImage": "Share image",
+    "toggleSizeSelector": "Toggle size selector"
+  },
+  "footer": {
+    "disclaimer": "This calculator is for reference only, not investment advice.",
+    "brand": "GeolGeol",
+    "tagline": "Should've bought..."
+  }
+}
