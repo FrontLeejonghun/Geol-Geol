@@ -199,6 +199,11 @@ function ResultContentInner() {
   const date = searchParams.get("date");
   const amountParam = searchParams.get("amount");
   const amount = amountParam ? Number(amountParam) : undefined;
+  const amountCurrencyParam = searchParams.get("amountCurrency");
+  const amountCurrency: "KRW" | "USD" | null =
+    amountCurrencyParam === "KRW" || amountCurrencyParam === "USD"
+      ? amountCurrencyParam
+      : null;
 
   // Fetch calculation result
   const fetchResult = useCallback(async () => {
@@ -219,6 +224,9 @@ function ResultContentInner() {
       if (amount !== undefined) {
         params.set("virtualAmount", amount.toString());
       }
+      if (amountCurrency) {
+        params.set("amountCurrency", amountCurrency);
+      }
 
       const response = await fetch(`/api/quote?${params.toString()}`);
       const data = await response.json();
@@ -235,7 +243,7 @@ function ResultContentInner() {
     } finally {
       setLoading(false);
     }
-  }, [ticker, date, amount, locale]);
+  }, [ticker, date, amount, amountCurrency, locale]);
 
   useEffect(() => {
     fetchResult();

@@ -167,12 +167,16 @@ export function buildResultUrl(params: {
   ticker: string;
   date: string;
   amount?: number;
+  amountCurrency?: "KRW" | "USD";
 }): string {
   const searchParams = new URLSearchParams();
   searchParams.set("ticker", params.ticker);
   searchParams.set("date", params.date);
   if (params.amount !== undefined) {
     searchParams.set("amount", params.amount.toString());
+  }
+  if (params.amountCurrency) {
+    searchParams.set("amountCurrency", params.amountCurrency);
   }
   return `${AppRoutes.result}?${searchParams.toString()}`;
 }

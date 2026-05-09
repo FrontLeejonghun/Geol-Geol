@@ -27,6 +27,7 @@ import {
   type YahooFinanceErrorInfo,
   createSuccess,
   createError,
+  getUsdKrwRate,
 } from "./yahoo-finance";
 
 // =============================================================================
@@ -226,7 +227,7 @@ export async function calculateStockRegretSafe(
   input: StockCalculationInput,
   locale: Locale = "ko"
 ): Promise<YahooFinanceResult<CalculationResult>> {
-  const { ticker, buyDate, virtualAmount } = input;
+  const { ticker, buyDate, virtualAmount, amountCurrency } = input;
 
   // Step 1: Get current quote for stock info
   const quoteResult = await getQuoteSafe(ticker);
@@ -276,7 +277,62 @@ export async function calculateStockRegretSafe(
 
   // Step 4: Calculate P&L
   const currentPrice = stockQuote.currentPrice;
-  const pnl = calculatePnL(pastPrice, currentPrice, virtualAmount, stock.currency);
+
+  // If user typed amount in a different currency, convert it to the stock
+  // currency before computing shares — uses the latest USD/KRW rate (no
+  // historical FX). This drives the user-facing display currency too.
+  const displayCurrency = amountCurrency ?? stock.currency;
+  let virtualAmountInStock = virtualAmount;
+  let fxRate: number | null = null;
+  if (
+    virtualAmount !== undefined &&
+    displayCurrency !== stock.currency
+  ) {
+    try {
+      fxRate = await getUsdKrwRate();
+      virtualAmountInStock =
+        displayCurrency === "USD" && stock.currency === "KRW"
+          ? virtualAmount * fxRate
+          : displayCurrency === "KRW" && stock.currency === "USD"
+            ? virtualAmount / fxRate
+            : virtualAmount;
+    } catch (err) {
+      return createError({
+        type: "API_ERROR",
+        message: "Failed to fetch FX rate for currency conversion",
+        retryable: true,
+        context: { step: "getUsdKrwRate" },
+        originalError: err instanceof Error ? err : undefined,
+      });
+    }
+  }
+
+  const pnl = calculatePnL(
+    pastPrice,
+    currentPrice,
+    virtualAmountInStock,
+    stock.currency
+  );
+
+  // If we converted, also expose the user-display version of `absolute`.
+  let pnlForDisplay = pnl;
+  if (
+    fxRate !== null &&
+    pnl.absolute !== null &&
+    displayCurrency !== stock.currency
+  ) {
+    const absoluteInDisplay =
+      displayCurrency === "USD" && stock.currency === "KRW"
+        ? pnl.absolute / fxRate
+        : displayCurrency === "KRW" && stock.currency === "USD"
+          ? pnl.absolute * fxRate
+          : pnl.absolute;
+    pnlForDisplay = {
+      ...pnl,
+      absolute: absoluteInDisplay,
+      currency: displayCurrency,
+    };
+  }
 
   // Step 5: Select meme copy based on outcome
   const memeCopy = selectMemeCopy(locale, pnl.outcomeTier);
@@ -289,11 +345,12 @@ export async function calculateStockRegretSafe(
     resolvedBuyDate: resolvedDate,
     pastPrice,
     currentPrice,
-    pnl,
+    pnl: pnlForDisplay,
     memeCopy,
     priceHistory,
     calculatedAt: new Date().toISOString(),
-  };
+    ...(fxRate !== null && { fxRate, fxRateAt: new Date().toISOString() }),
+  } as CalculationResult;
 
   return createSuccess(result);
 }

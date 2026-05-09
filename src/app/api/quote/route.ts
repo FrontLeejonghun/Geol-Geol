@@ -152,6 +152,11 @@ export async function GET(
   const buyDate = searchParams.get("buyDate");
   const virtualAmountStr = searchParams.get("virtualAmount");
   const localeParam = searchParams.get("locale") ?? "ko";
+  const amountCurrencyParam = searchParams.get("amountCurrency");
+  const amountCurrency: "KRW" | "USD" | null =
+    amountCurrencyParam === "KRW" || amountCurrencyParam === "USD"
+      ? amountCurrencyParam
+      : null;
 
   // ==========================================================================
   // Validate required parameters
@@ -278,6 +283,7 @@ export async function GET(
       ticker: trimmedTicker,
       buyDate,
       virtualAmount,
+      amountCurrency: amountCurrency ?? undefined,
     },
     locale
   );

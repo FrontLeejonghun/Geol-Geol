@@ -610,7 +610,7 @@ export const ResultVisualizationContainer = forwardRef<
         <div className="px-4 pb-4">
           <ComparablesPanel
             absoluteAmount={pnl.absolute}
-            currency={stock.currency}
+            currency={pnl.currency ?? stock.currency}
             locale={locale}
             isGain={pnl.absolute >= 0}
           />
@@ -622,13 +622,7 @@ export const ResultVisualizationContainer = forwardRef<
 
       {/* Actions (share, download, etc.) */}
       {actions && !forCapture && (
-        <div
-          className={`
-            px-4 pb-4 flex gap-2 justify-center
-            border-t
-            ${theme === "dark" ? "border-slate-700/50" : "border-gray-200/50"}
-          `}
-        >
+        <div className="flex justify-center gap-2 border-t px-4 py-4">
           {actions}
         </div>
       )}

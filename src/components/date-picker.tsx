@@ -21,13 +21,20 @@ import {
   useEffect,
   useId,
   useRef,
-  type ChangeEvent,
   type KeyboardEvent,
 } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import type { MarketType } from "@/types/stock";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format as formatDate, parse as parseDate, isValid } from "date-fns";
+import { ko as koLocale, enUS } from "date-fns/locale";
 import {
   validateTradingDate,
   getDatePresets,
@@ -321,24 +328,23 @@ export function DatePicker({
   // ==========================================================================
 
   /**
-   * Handle date input change
+   * Handle a Date selected from the shadcn Calendar (react-day-picker).
    */
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      setInternalValue(newValue);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const handleCalendarSelect = useCallback(
+    (date: Date | undefined) => {
+      if (!date) return;
+      const iso = formatDate(date, "yyyy-MM-dd");
+      setInternalValue(iso);
       setIsTouched(true);
-
-      // Validate the new value
-      const result = validateTradingDate(newValue, market);
+      const result = validateTradingDate(iso, market);
       setValidation(result);
-
-      // Notify parent
       if (result.isValid) {
-        onDateChange(newValue);
+        onDateChange(iso);
       } else {
         onDateChange(null);
       }
+      setCalendarOpen(false);
     },
     [market, onDateChange]
   );
@@ -411,7 +417,7 @@ export function DatePicker({
    * Handle date input keyboard events
    */
   const handleInputKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent<HTMLElement>) => {
       // ArrowDown from date input moves focus to first preset
       if (e.key === "ArrowDown" && showPresets && presets.length > 0) {
         e.preventDefault();
@@ -455,32 +461,65 @@ export function DatePicker({
         {labelText}
       </Label>
 
-      {/* Input Container */}
-      <div className="relative">
-        {/* Calendar icon */}
-        <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center">
-          <CalendarIcon />
-        </div>
-
-        {/* Date Input */}
-        <Input
-          id={inputId}
-          type="date"
-          value={currentValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleInputKeyDown}
-          disabled={disabled}
-          max={maxDate}
-          min="1990-01-01"
-          placeholder={placeholderText}
-          className="h-12 pl-10 text-base"
-          aria-invalid={showError ? "true" : undefined}
-          aria-describedby={
-            showError ? errorId : showWarning ? hintId : undefined
+      {/* Calendar trigger (shadcn Popover + Calendar) */}
+      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <PopoverTrigger
+          render={
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              id={inputId}
+              disabled={disabled}
+              onBlur={handleBlur}
+              onKeyDown={handleInputKeyDown}
+              className="h-12 w-full justify-start gap-2 px-3 text-base font-normal text-foreground"
+              aria-invalid={showError ? "true" : undefined}
+              aria-describedby={
+                showError ? errorId : showWarning ? hintId : undefined
+              }
+            >
+              <CalendarIcon />
+              <span className={currentValue ? "" : "text-muted-foreground"}>
+                {currentValue
+                  ? formatDate(
+                      parseDate(currentValue, "yyyy-MM-dd", new Date()),
+                      locale === "ko" ? "yyyy년 M월 d일 (EEE)" : "PPP",
+                      { locale: locale === "ko" ? koLocale : enUS }
+                    )
+                  : placeholderText}
+              </span>
+            </Button>
           }
         />
-      </div>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={
+              currentValue
+                ? (() => {
+                    const parsed = parseDate(currentValue, "yyyy-MM-dd", new Date());
+                    return isValid(parsed) ? parsed : undefined;
+                  })()
+                : undefined
+            }
+            onSelect={handleCalendarSelect}
+            disabled={(date) => {
+              const max = maxDate ? new Date(maxDate) : new Date();
+              const min = new Date("1990-01-01");
+              return date > max || date < min;
+            }}
+            captionLayout="dropdown"
+            startMonth={new Date(1990, 0)}
+            endMonth={new Date()}
+            defaultMonth={
+              currentValue
+                ? parseDate(currentValue, "yyyy-MM-dd", new Date())
+                : new Date()
+            }
+          />
+        </PopoverContent>
+      </Popover>
 
       {/* Validation Messages */}
       {showError && errorMessage && (

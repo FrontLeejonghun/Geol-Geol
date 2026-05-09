@@ -251,8 +251,10 @@ export interface StockCalculationInput {
   ticker: string;
   /** Selected buy date (ISO format YYYY-MM-DD) */
   buyDate: string;
-  /** Optional hypothetical purchase amount in stock's native currency */
+  /** Optional hypothetical purchase amount, denominated in `amountCurrency` */
   virtualAmount?: number;
+  /** Currency the user typed `virtualAmount` in. Defaults to stock currency. */
+  amountCurrency?: StockCurrency;
 }
 
 // =============================================================================
@@ -493,6 +495,12 @@ export interface CalculationResult {
 
   /** Timestamp when calculation was performed */
   calculatedAt: string;
+
+  /** USD→KRW rate used for currency conversion (if any) */
+  fxRate?: number;
+
+  /** When the FX rate snapshot was taken */
+  fxRateAt?: string;
 }
 
 // =============================================================================

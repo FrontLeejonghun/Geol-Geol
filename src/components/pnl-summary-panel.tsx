@@ -24,7 +24,11 @@ import type {
   Theme,
   OutcomeTier,
 } from "@/types/stock";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import {
+  formatCurrency,
+  formatCurrencyWithSign,
+  formatPercent,
+} from "@/lib/format";
 
 // =============================================================================
 // Types
@@ -204,18 +208,26 @@ export function PnLSummaryPanel({
   const tierStyles = OUTCOME_TIER_STYLES[theme][pnl.outcomeTier];
   const tierLabel = OUTCOME_TIER_LABELS[locale][pnl.outcomeTier];
 
-  // Format values
+  // Format values. `currency` is the *stock's* native currency (used for
+  // per-share past/current prices). The P&L absolute may have been converted
+  // to the user's chosen display currency by the backend, in which case
+  // `pnl.currency` differs.
+  const absoluteCurrency = pnl.currency ?? currency;
   const formattedPastPrice = formatCurrency(pastPrice, currency, locale);
   const formattedCurrentPrice = formatCurrency(currentPrice, currency, locale);
   const formattedPercent = formatPercent(pnl.percent, locale);
-  const formattedAbsolute = pnl.absolute !== null
-    ? (pnl.absolute >= 0 ? "+" : "") + formatCurrency(Math.abs(pnl.absolute), currency, locale)
-    : null;
+  const formattedAbsolute =
+    pnl.absolute !== null
+      ? formatCurrencyWithSign(pnl.absolute, absoluteCurrency, locale)
+      : null;
 
-  // Calculate price change for display
+  // Calculate price change for display (per-share, signed).
   const priceChange = currentPrice - pastPrice;
-  const formattedPriceChange =
-    (priceChange >= 0 ? "+" : "") + formatCurrency(Math.abs(priceChange), currency, locale);
+  const formattedPriceChange = formatCurrencyWithSign(
+    priceChange,
+    currency,
+    locale
+  );
 
   // Labels based on locale
   const labels = {

@@ -53,12 +53,15 @@ const DatePicker = dynamic(
 // Types
 // =============================================================================
 
+type AmountCurrency = "KRW" | "USD";
+
 interface AmountInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   label: string;
-  currency: string;
+  amountCurrency: AmountCurrency;
+  onCurrencyChange: (c: AmountCurrency) => void;
   onEnterSubmit?: () => void;
 }
 
@@ -71,7 +74,8 @@ function AmountInput({
   onChange,
   placeholder,
   label,
-  currency,
+  amountCurrency,
+  onCurrencyChange,
   onEnterSubmit,
 }: AmountInputProps) {
   const handleChange = useCallback(
@@ -93,12 +97,26 @@ function AmountInput({
   );
 
   return (
-    <div className="relative">
+    <div className="flex gap-2">
       <Label htmlFor="amount-input" className="sr-only">
         {label}
       </Label>
-      <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center">
-        <span className="text-sm text-muted-foreground">{currency}</span>
+      <div className="inline-flex h-12 shrink-0 overflow-hidden rounded-lg border">
+        {(["KRW", "USD"] as const).map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => onCurrencyChange(c)}
+            aria-pressed={amountCurrency === c}
+            className={`px-3 text-sm font-medium transition-colors ${
+              amountCurrency === c
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {c === "KRW" ? "₩ KRW" : "$ USD"}
+          </button>
+        ))}
       </div>
       <Input
         id="amount-input"
@@ -108,7 +126,7 @@ function AmountInput({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="h-12 pl-9 text-base"
+        className="h-12 flex-1 text-base"
       />
     </div>
   );
@@ -128,6 +146,9 @@ export default function Home() {
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("");
+  const [amountCurrency, setAmountCurrency] = useState<AmountCurrency>(
+    locale === "ko" ? "KRW" : "USD"
+  );
 
   // Refs for focus management
   const formRef = useRef<HTMLFormElement>(null);
@@ -143,15 +164,13 @@ export default function Home() {
   // Check if we can proceed to calculation
   const canCalculate = selectedStock !== null && selectedDate !== null;
 
-  // Determine currency symbol based on market
-  const currencySymbol = selectedStock?.market === "KR" ? "₩" : "$";
-
   // Build result URL
   const resultUrl = canCalculate
     ? buildResultUrl({
         ticker: selectedStock.symbol,
         date: selectedDate,
         amount: amount ? Number(amount) : undefined,
+        amountCurrency,
       })
     : "";
 
@@ -304,7 +323,8 @@ export default function Home() {
               onChange={setAmount}
               placeholder={t("home.amountPlaceholder")}
               label={t("home.amountLabel")}
-              currency={currencySymbol}
+              amountCurrency={amountCurrency}
+              onCurrencyChange={setAmountCurrency}
               onEnterSubmit={canCalculate ? handleSubmit : undefined}
             />
           </div>

@@ -22,6 +22,22 @@ import { translateIndustry } from "./industry-i18n";
 
 const yahooFinance = new YahooFinance();
 
+/**
+ * Latest USD→KRW rate from Yahoo (`KRW=X`). Cached 1h.
+ */
+export const getUsdKrwRate = unstable_cache(
+  async (): Promise<number> => {
+    const q = await yahooFinance.quote("KRW=X");
+    const rate = q?.regularMarketPrice ?? q?.regularMarketPreviousClose;
+    if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) {
+      throw new YahooFinanceError("Invalid USD/KRW rate");
+    }
+    return rate;
+  },
+  ["fx-usd-krw-cached"],
+  { revalidate: 3600, tags: ["fx"] }
+);
+
 async function fetchYahooIndustry(ticker: string): Promise<string | undefined> {
   try {
     const summary = await yahooFinance.quoteSummary(ticker, {
