@@ -193,7 +193,7 @@ async function resolveKoreanDomestic(
   }
 
   const seenBase = new Set<string>();
-  const results: StockSearchResult[] = [];
+  const results: Array<StockSearchResult & { _rank: number }> = [];
   for (const cand of candidates) {
     const base = cand.code;
     if (!base || seenBase.has(base)) continue;
@@ -202,6 +202,13 @@ async function resolveKoreanDomestic(
     seenBase.add(base);
 
     const exchange = (hit.exchange ?? "UNKNOWN") as ExchangeCode;
+    const price = hit.regularMarketPrice ?? hit.regularMarketPreviousClose;
+    const cap =
+      typeof hit.marketCap === "number" && hit.marketCap > 0
+        ? hit.marketCap
+        : typeof hit.regularMarketVolume === "number" && typeof price === "number"
+          ? hit.regularMarketVolume * price
+          : 0;
     results.push({
       symbol: hit.symbol,
       name: hit.longName ?? hit.shortName ?? cand.name,
@@ -211,11 +218,13 @@ async function resolveKoreanDomestic(
       quoteType: "EQUITY",
       logoUrl: getKoreanStockLogoUrl(hit.symbol),
       currency: "KRW",
-      currentPrice:
-        hit.regularMarketPrice ?? hit.regularMarketPreviousClose,
+      currentPrice: price,
+      _rank: cap,
     });
   }
-  return results;
+  return results
+    .sort((a, b) => b._rank - a._rank)
+    .map(({ _rank: _r, ...rest }) => rest);
 }
 
 export const resolveKoreanQuery = unstable_cache(

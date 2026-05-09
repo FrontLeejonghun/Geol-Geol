@@ -186,12 +186,19 @@ export const searchStocks = unstable_cache(
 
       // Enrich with logos and current prices in parallel (best-effort).
       const symbols = stockResults.map((r) => r.symbol);
+      type RankQuote = {
+        symbol?: string;
+        regularMarketPrice?: number;
+        regularMarketPreviousClose?: number;
+        marketCap?: number;
+        regularMarketVolume?: number;
+      };
       const [priceQuotes, enriched] = await Promise.all([
         symbols.length > 0
           ? yahooFinance
               .quote(symbols, { return: "array" })
-              .catch(() => [] as Array<{ symbol?: string; regularMarketPrice?: number; regularMarketPreviousClose?: number }>)
-          : Promise.resolve([] as Array<{ symbol?: string; regularMarketPrice?: number; regularMarketPreviousClose?: number }>),
+              .catch(() => [] as RankQuote[])
+          : Promise.resolve([] as RankQuote[]),
         Promise.all(
           stockResults.map(async (r) => {
             try {
@@ -208,18 +215,33 @@ export const searchStocks = unstable_cache(
       ]);
 
       const priceBySymbol = new Map<string, number>();
-      for (const q of priceQuotes) {
+      const rankBySymbol = new Map<string, number>();
+      for (const q of priceQuotes as RankQuote[]) {
         if (q?.symbol) {
           const p = q.regularMarketPrice ?? q.regularMarketPreviousClose;
           if (typeof p === "number") priceBySymbol.set(q.symbol, p);
+          // "Hotness" rank: marketCap when available, else volume × price
+          // (rough proxy for traded-value), else 0.
+          const cap =
+            typeof q.marketCap === "number" && q.marketCap > 0
+              ? q.marketCap
+              : typeof q.regularMarketVolume === "number" &&
+                  typeof p === "number"
+                ? q.regularMarketVolume * p
+                : 0;
+          rankBySymbol.set(q.symbol, cap);
         }
       }
 
-      return enriched.map((r) => ({
-        ...r,
-        currency: getCurrencyForMarket(r.market),
-        currentPrice: priceBySymbol.get(r.symbol),
-      }));
+      return enriched
+        .map((r) => ({
+          ...r,
+          currency: getCurrencyForMarket(r.market),
+          currentPrice: priceBySymbol.get(r.symbol),
+          _rank: rankBySymbol.get(r.symbol) ?? 0,
+        }))
+        .sort((a, b) => b._rank - a._rank)
+        .map(({ _rank: _r, ...rest }) => rest);
     } catch (error) {
       console.error("Yahoo Finance search error:", error);
       throw new YahooFinanceError(
