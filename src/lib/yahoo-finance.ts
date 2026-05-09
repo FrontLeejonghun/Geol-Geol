@@ -405,44 +405,53 @@ export const getPriceOnDate = unstable_cache(
     date: string
   ): Promise<{ resolvedDate: string; price: number }> => {
     try {
-      // Look back up to 7 days to find a trading day
+      // Step A: usual nearest-prior-trading-day lookup (7-day lookback).
       const lookbackDays = 7;
       const startDate = new Date(date);
       startDate.setDate(startDate.getDate() - lookbackDays);
-
       const startDateStr = startDate.toISOString().split("T")[0];
-
       if (!startDateStr) {
         throw new YahooFinanceError("Failed to calculate start date");
       }
 
-      const history = await getHistoricalPrices(ticker, startDateStr, date);
-
-      // Find the price on or before the requested date
       const targetDate = new Date(date);
-      const validPrices = history.data.filter(
-        (p) => new Date(p.date) <= targetDate
+
+      try {
+        const history = await getHistoricalPrices(ticker, startDateStr, date);
+        const validPrices = history.data.filter(
+          (p) => new Date(p.date) <= targetDate
+        );
+        if (validPrices.length > 0) {
+          const pricePoint = validPrices[validPrices.length - 1]!;
+          return { resolvedDate: pricePoint.date, price: pricePoint.close };
+        }
+      } catch {
+        // fall through to forward-search
+      }
+
+      // Step B: requested date is likely before IPO. Fetch from the
+      // requested date through today and pick the first trading day that
+      // actually has data — that's the IPO date for this ticker.
+      const todayStr = new Date().toISOString().split("T")[0]!;
+      const forwardRows = await yahooFinance.historical(ticker, {
+        period1: date,
+        period2: todayStr,
+        interval: "1d",
+      });
+      const firstAvailable = forwardRows?.find(
+        (r) => r.date && r.adjClose != null
       );
-
-      if (validPrices.length === 0) {
-        throw new YahooFinanceError(
-          `No trading day found for ${ticker} on or before ${date}`
-        );
+      if (firstAvailable && firstAvailable.date) {
+        const iso = new Date(firstAvailable.date).toISOString().split("T")[0]!;
+        return {
+          resolvedDate: iso,
+          price: firstAvailable.adjClose ?? firstAvailable.close ?? 0,
+        };
       }
 
-      // Get the most recent valid price (nearest prior trading day)
-      const pricePoint = validPrices[validPrices.length - 1];
-
-      if (!pricePoint) {
-        throw new YahooFinanceError(
-          `No price data available for ${ticker} on or before ${date}`
-        );
-      }
-
-      return {
-        resolvedDate: pricePoint.date,
-        price: pricePoint.close,
-      };
+      throw new YahooFinanceError(
+        `No trading data found for ${ticker} near ${date}`
+      );
     } catch (error) {
       if (error instanceof YahooFinanceError) throw error;
       console.error("Yahoo Finance getPriceOnDate error:", error);
@@ -452,7 +461,7 @@ export const getPriceOnDate = unstable_cache(
       );
     }
   },
-  ["yahoo-price-on-date"],
+  ["yahoo-price-on-date-v2"],
   {
     revalidate: CACHE_TTL_SECONDS,
     tags: ["yahoo-finance", "price-on-date"],

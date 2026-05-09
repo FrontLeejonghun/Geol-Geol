@@ -266,9 +266,32 @@ function ResultContentInner() {
     return <ResultErrorDisplay errorKey="noData" onRetry={handleRetry} theme={theme} locale={locale} />;
   }
 
+  // Detect that the requested date was auto-corrected by more than a
+  // typical weekend/holiday gap — likely the ticker was pre-IPO.
+  const rawDate = new Date(result.rawBuyDate);
+  const resolvedDate = new Date(result.resolvedBuyDate);
+  const gapDays =
+    Math.abs(resolvedDate.getTime() - rawDate.getTime()) /
+    (1000 * 60 * 60 * 24);
+  const showIpoBanner = gapDays > 14;
+
   // Render result
   return (
     <div className="w-full max-w-lg mx-auto">
+      {showIpoBanner && (
+        <Alert variant="default" className="mb-4">
+          <AlertTitle>
+            {locale === "ko"
+              ? "상장 전 날짜를 선택하셨어요"
+              : "You picked a pre-IPO date"}
+          </AlertTitle>
+          <AlertDescription>
+            {locale === "ko"
+              ? `${result.rawBuyDate} 시점엔 거래되기 전이라 상장 첫 거래일인 ${result.resolvedBuyDate}로 보정했습니다.`
+              : `${result.rawBuyDate} predates this stock's IPO, so we used the first trading day (${result.resolvedBuyDate}) instead.`}
+          </AlertDescription>
+        </Alert>
+      )}
       {/* Result Card */}
       <ResultVisualizationContainer
         stock={result.stock}
