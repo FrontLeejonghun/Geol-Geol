@@ -153,12 +153,16 @@ export const searchStocks = unstable_cache(
           continue;
         }
 
-        // Only include EQUITY type (yahoo-finance2 v3 lowercases typeDisp)
+        // Allow stocks AND ETFs (incl. leveraged like SOXL/TQQQ).
+        // Skip options, futures, indices, currencies, crypto.
         if (
           !("typeDisp" in quote) ||
-          typeof quote.typeDisp !== "string" ||
-          quote.typeDisp.toLowerCase() !== "equity"
+          typeof quote.typeDisp !== "string"
         ) {
+          continue;
+        }
+        const td = quote.typeDisp.toLowerCase();
+        if (td !== "equity" && td !== "etf") {
           continue;
         }
 
@@ -180,7 +184,7 @@ export const searchStocks = unstable_cache(
           displayName: shortName ?? longName ?? quote.symbol,
           exchange,
           market,
-          quoteType: "EQUITY",
+          quoteType: td === "etf" ? "ETF" : "EQUITY",
         });
       }
 
