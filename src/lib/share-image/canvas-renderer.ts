@@ -14,7 +14,11 @@ import type {
   Locale,
 } from "@/types/stock";
 import { getShareImageDimensions } from "@/types/stock";
-import { formatPercent, formatCurrency } from "@/lib/format";
+import {
+  formatPercent,
+  formatCurrency,
+  formatCurrencyWithSign,
+} from "@/lib/format";
 import { getFontString, loadShareImageFonts } from "./fonts";
 import { getCanvasTheme, getOutcomeLabel, getBrandingText, type CanvasTheme } from "./themes";
 
@@ -304,50 +308,57 @@ function renderPortrait(
   let currentY = padding;
 
   // === Header Section ===
-  const headerHeight = 50 * scale;
+  // Mirror the on-screen card: company name (primary) + industry (secondary)
+  // on the left; current price + buy date on the right. Ticker is dropped.
+  const headerHeight = 60 * scale;
 
-  // Ticker
+  const headerName =
+    (locale === "ko" && stock.nameKo) ||
+    stock.nameEn ||
+    stock.name ||
+    stock.ticker;
+  const industryLabel =
+    (locale === "ko" ? stock.industryKo : stock.industry) ?? stock.industry;
+
   drawText(
     ctx,
-    stock.ticker,
+    headerName,
     padding,
-    currentY + headerHeight / 2,
-    getFontString(locale, 600, 24 * scale),
+    currentY + 22 * scale,
+    getFontString(locale, 700, 26 * scale),
     theme.primaryText,
     "left"
   );
+  if (industryLabel) {
+    drawText(
+      ctx,
+      industryLabel,
+      padding,
+      currentY + 48 * scale,
+      getFontString(locale, 500, 16 * scale),
+      theme.mutedText,
+      "left"
+    );
+  }
 
-  // Exchange badge
-  ctx.ctx.font = getFontString(locale, 500, 14 * scale);
-  const exchangeWidth = ctx.ctx.measureText(stock.exchange).width + 16 * scale;
-  roundRect(
-    ctx.ctx,
-    padding + ctx.ctx.measureText(stock.ticker).width + 12 * scale,
-    currentY + headerHeight / 2 - 12 * scale,
-    exchangeWidth,
-    24 * scale,
-    6 * scale
-  );
-  ctx.ctx.fillStyle = theme.cardBg;
-  ctx.ctx.fill();
+  // Right side: current price (big) + buy date (small)
+  const formattedCurrent = formatCurrency(currentPrice, stock.currency, locale);
   drawText(
     ctx,
-    stock.exchange,
-    padding + ctx.ctx.measureText(stock.ticker).width + 12 * scale + exchangeWidth / 2,
-    currentY + headerHeight / 2,
-    getFontString(locale, 500, 14 * scale),
-    theme.mutedText,
-    "center"
+    formattedCurrent,
+    width - padding,
+    currentY + 22 * scale,
+    getFontString(locale, 700, 22 * scale),
+    theme.primaryText,
+    "right"
   );
-
-  // Buy date
   const dateLabel = locale === "ko" ? "매수일" : "Buy Date";
   drawText(
     ctx,
-    `${dateLabel}: ${buyDate}`,
+    `${dateLabel} ${buyDate}`,
     width - padding,
-    currentY + headerHeight / 2,
-    getFontString(locale, 400, 16 * scale),
+    currentY + 48 * scale,
+    getFontString(locale, 400, 14 * scale),
     theme.mutedText,
     "right"
   );
@@ -454,12 +465,12 @@ function renderPortrait(
   const labelY = currentY + 25 * scale;
   const valueY = currentY + 55 * scale;
 
-  // Past price
+  // Past price (per-share, stock currency)
   const pastLabel = locale === "ko" ? "매수가" : "Past";
   drawText(ctx, pastLabel, col1X, labelY, getFontString(locale, 400, 14 * scale), theme.mutedText, "center");
   drawText(
     ctx,
-    formatCurrency(pastPrice, pnl.currency, locale),
+    formatCurrency(pastPrice, stock.currency, locale),
     col1X,
     valueY,
     getFontString(locale, 600, 18 * scale),
@@ -467,12 +478,12 @@ function renderPortrait(
     "center"
   );
 
-  // Current price
+  // Current price (per-share, stock currency)
   const currentLabel = locale === "ko" ? "현재가" : "Current";
   drawText(ctx, currentLabel, col2X, labelY, getFontString(locale, 400, 14 * scale), theme.mutedText, "center");
   drawText(
     ctx,
-    formatCurrency(currentPrice, pnl.currency, locale),
+    formatCurrency(currentPrice, stock.currency, locale),
     col2X,
     valueY,
     getFontString(locale, 600, 18 * scale),
@@ -480,12 +491,13 @@ function renderPortrait(
     "center"
   );
 
-  // Change
-  const changeLabel = locale === "ko" ? "변동" : "Change";
+  // Change — pnl.absolute is in user's display currency (pnl.currency)
+  const changeLabel = locale === "ko" ? "손익" : "P&L";
   drawText(ctx, changeLabel, col3X, labelY, getFontString(locale, 400, 14 * scale), theme.mutedText, "center");
-  const changeText = pnl.absolute !== null
-    ? formatCurrency(pnl.absolute, pnl.currency, locale)
-    : formatPercent(pnl.percent, locale);
+  const changeText =
+    pnl.absolute !== null
+      ? formatCurrencyWithSign(pnl.absolute, pnl.currency, locale)
+      : formatPercent(pnl.percent, locale);
   drawText(
     ctx,
     changeText,
@@ -511,7 +523,7 @@ function renderLandscape(
   input: ShareImageInput
 ): void {
   const { width, height, scale, locale, theme } = ctx;
-  const { stock, buyDate, pnl, memeCopy, priceHistory } = input;
+  const { stock, buyDate, currentPrice, pnl, memeCopy, priceHistory } = input;
 
   // Draw background
   drawBackground(ctx);
@@ -568,13 +580,18 @@ function renderLandscape(
   drawBadge(ctx, leftWidth / 2, leftY, outcomeLabel, theme.icon);
   leftY += 60 * scale;
 
-  // Stock info
+  // Stock info — company name first (matches on-screen UI)
+  const stockName =
+    (locale === "ko" && stock.nameKo) ||
+    stock.nameEn ||
+    stock.name ||
+    stock.ticker;
   drawText(
     ctx,
-    `${stock.ticker} | ${buyDate}`,
+    `${stockName} · ${formatCurrency(currentPrice, stock.currency, locale)} · ${buyDate}`,
     leftWidth / 2,
     leftY,
-    getFontString(locale, 400, 18 * scale),
+    getFontString(locale, 500, 18 * scale),
     theme.mutedText,
     "center"
   );
