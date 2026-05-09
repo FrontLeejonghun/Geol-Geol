@@ -541,8 +541,8 @@ export function ClipboardCopyButtonPrimary({
 }: ClipboardCopyButtonProps) {
   const primaryStyles =
     theme === "dark"
-      ? "bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-500"
-      : "bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500";
+      ? "bg-primary hover:bg-primary text-white focus:ring-ring/50"
+      : "bg-primary hover:bg-primary text-white focus:ring-ring/50";
 
   return (
     <ClipboardCopyButton

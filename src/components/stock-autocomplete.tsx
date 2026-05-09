@@ -117,16 +117,8 @@ function LoadingSpinner({ label }: { label: string }) {
  * Market badge (KR/US indicator)
  */
 function MarketBadge({ market }: { market: MarketType }) {
-  const isKR = market === "KR";
-  const bgColor = isKR ? "bg-red-100 text-red-700" : "bg-teal-100 text-teal-700";
-  const darkBgColor = isKR
-    ? "dark:bg-red-900/30"
-    : "dark:bg-teal-900/30";
-
   return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${bgColor} ${darkBgColor}`}
-    >
+    <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
       {market}
     </span>
   );
@@ -598,7 +590,7 @@ export function StockAutocomplete({
                   // Trigger re-search by updating state
                   setSearchState((prev) => ({ ...prev, error: null, isLoading: true }));
                 }}
-                className="mt-2 text-sm text-blue-600 hover:text-blue-800:text-blue-300"
+                className="mt-2 text-sm text-foreground hover:text-foreground:text-foreground"
               >
                 {t("search.tryAgain")}
               </button>
@@ -628,7 +620,7 @@ export function StockAutocomplete({
                   transition-colors duration-100
                   ${
                     highlightedIndex === index
-                      ? "bg-blue-50"
+                      ? "bg-accent"
                       : "hover:bg-gray-50:bg-gray-700/50"
                   }
                 `}

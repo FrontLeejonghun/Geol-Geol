@@ -542,11 +542,11 @@ export function DatePicker({
                 tabIndex={index === focusedPresetIndex ? 0 : -1}
                 className={`
                   rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2
                  :ring-offset-gray-900
                   ${
                     currentValue === preset.value
-                      ? "bg-blue-600 text-white"
+                      ? "bg-primary text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-600"
                   }
                 `}

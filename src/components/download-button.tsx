@@ -551,7 +551,7 @@ export function DownloadButton({
                     option.value === selectedSize
                       ? theme === "dark"
                         ? "bg-slate-700"
-                        : "bg-blue-50"
+                        : "bg-accent"
                       : theme === "dark"
                         ? "hover:bg-slate-700/50"
                         : "hover:bg-gray-50"
@@ -586,7 +586,7 @@ export function DownloadButton({
                 {option.value === selectedSize && (
                   <CheckIcon
                     className={
-                      theme === "dark" ? "text-blue-400" : "text-blue-600"
+                      theme === "dark" ? "text-foreground" : "text-foreground"
                     }
                   />
                 )}

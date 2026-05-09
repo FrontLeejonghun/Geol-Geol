@@ -85,7 +85,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
       <div className="mb-8 text-center">
         <Link href="/">
           <h1 className="text-2xl font-bold tracking-tight">
-            <span className="text-blue-600">{t("appName")}</span>
+            <span className="text-foreground">{t("appName")}</span>
           </h1>
         </Link>
         <p className="text-sm text-gray-500">
